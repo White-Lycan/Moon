@@ -398,15 +398,15 @@
                 "cd /midnight/thoughts",
                 "> compiling stories under a blood moon",
                 "tail -f howls.log",
-                "> still debugging the curse"
+                "> still debugging the curse" /n "test new line"
             ];
             var el = document.getElementById('typewriter');
             var lineIndex = 0;
             var charIndex = 0;
             var deleting = false;
-            var TYPE_SPEED = 55;
-            var DELETE_SPEED = 30;
-            var HOLD = 1400;
+            var TYPE_SPEED = 45;
+            var DELETE_SPEED = 20;
+            var HOLD = 2400;
             function tick() {
                 var current = lines[lineIndex];
                 if (!deleting) {
