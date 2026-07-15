@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Read something — Lycans' Blog</title>
+<meta name="description" content="Articles from Lycans' Blog — homelab, networking, security, and everything in between.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c0a;
+    --panel:#10130f;
+    --border:#23281f;
+    --text:#cfd8c9;
+    --text-dim:#7c8a73;
+    --accent:#8fe38f;
+    --moon:#e8b06b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    line-height:1.6;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;}
+  a:hover{border-bottom-color:var(--accent);}
+
+  header{
+    padding:1.5rem 2rem;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:1rem;
+  }
+  .brand{font-weight:700;letter-spacing:0.03em;color:var(--text);font-size:1.05rem;}
+  .brand a{color:var(--text);border:none;}
+  .moon{display:inline-block;color:var(--moon);margin-right:0.5rem;animation:phase 8s ease-in-out infinite;}
+  @keyframes phase{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  nav ul{list-style:none;display:flex;gap:1.5rem;margin:0;padding:0;flex-wrap:wrap;}
+  nav a{color:var(--text-dim);font-size:0.92rem;}
+  nav a.active{color:var(--accent);}
+  nav a:hover{color:var(--accent);}
+
+  main{
+    flex:1;
+    max-width:820px;
+    width:100%;
+    margin:0 auto;
+    padding:3rem 2rem 4rem;
+  }
+
+  .term-window{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);
+    margin-bottom:2rem;
+  }
+  .term-bar{display:flex;align-items:center;gap:0.4rem;padding:0.7rem 1rem;border-bottom:1px solid var(--border);background:#0d100c;}
+  .dot{width:10px;height:10px;border-radius:50%;}
+  .dot.red{background:#e0645a;}
+  .dot.yellow{background:#e3c369;}
+  .dot.green{background:#7ec97e;}
+  .term-title{margin-left:0.75rem;color:var(--text-dim);font-size:0.8rem;}
+  .term-body{padding:2rem;}
+
+  .prompt{color:var(--text-dim);}
+  .prompt .path{color:var(--accent);}
+  .cursor{
+    display:inline-block;width:0.55em;height:1em;background:var(--accent);
+    vertical-align:text-bottom;animation:blink 1.1s steps(1) infinite;margin-left:2px;
+  }
+  @keyframes blink{50%{opacity:0;}}
+
+  h1{font-size:1.4rem;color:var(--text);margin:1.5rem 0 0.5rem;}
+  .lead{color:var(--text-dim);margin-bottom:0;}
+
+  .index-line{color:var(--text-dim);font-size:0.85rem;margin:0 0 1.5rem;}
+  .index-line span{color:var(--accent);}
+
+  .post-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1rem;}
+  .post{
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:1.25rem 1.5rem;
+    background:#0d100c;
+    transition:border-color 0.15s ease;
+  }
+  .post:hover{border-color:var(--accent);}
+  .post-meta{
+    display:flex;
+    gap:0.75rem;
+    align-items:center;
+    font-size:0.78rem;
+    color:var(--text-dim);
+    margin-bottom:0.4rem;
+  }
+  .post-meta .tag{
+    border:1px solid var(--border);
+    padding:0.1rem 0.5rem;
+    border-radius:3px;
+  }
+  .post h2{
+    font-size:1.05rem;
+    margin:0 0 0.5rem;
+    color:var(--text);
+  }
+  .post h2 a{color:var(--text);border:none;}
+  .post h2 a:hover{color:var(--accent);}
+  .post p{margin:0;color:var(--text-dim);font-size:0.92rem;}
+
+  .note{
+    margin-top:2rem;
+    font-size:0.8rem;
+    color:var(--text-dim);
+    border-top:1px dashed var(--border);
+    padding-top:1rem;
+  }
+
+  footer{
+    border-top:1px solid var(--border);
+    padding:1.5rem 2rem;
+    text-align:center;
+    color:var(--text-dim);
+    font-size:0.85rem;
+  }
+  footer .links{display:flex;gap:1rem;justify-content:center;margin-top:0.5rem;}
+  footer a{color:var(--text-dim);}
+  footer a:hover{color:var(--accent);}
+
+  @media (max-width:600px){
+    header{padding:1.25rem;}
+    main{padding:2rem 1.25rem 3rem;}
+    .term-body{padding:1.25rem;}
+    .post{padding:1rem;}
+  }
+  @media (prefers-reduced-motion: reduce){.moon,.cursor{animation:none;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="moon">☾</span><a href="/index.html">LYCAN.blog</a></div>
+  <nav>
+    <ul>
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/About/about.html">What is this?</a></li>
+      <li><a href="/Articles/article.html" class="active">Read something</a></li>
+      <li><a href="/Contact/contact.html">Get in touch</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <div class="term-window">
+    <div class="term-bar">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green"></span>
+      <span class="term-title">lycan@blog: ~/articles</span>
+    </div>
+    <div class="term-body">
+      <p class="prompt"><span class="path">lycan@blog:~/articles$</span> ls -la<span class="cursor"></span></p>
+      <h1>Read something</h1>
+      <p class="lead">Notes from the homelab, the classroom, and the hours in between.</p>
+    </div>
+  </div>
+
+  <p class="index-line"><span>3</span> posts found</p>
+
+  <ul class="post-list">
+    <li class="post">
+      <div class="post-meta">
+        <span>2026-07-01</span>
+        <span class="tag">homelab</span>
+        <span class="tag">networking</span>
+      </div>
+      <h2><a href="#">Chasing bufferbloat: why the network only stutters sometimes</a></h2>
+      <p>
+        Intermittent lag is worse than an outage because nothing ever confirms
+        it's real. A walkthrough of tracking down millisecond-scale hiccups on an
+        OPNsense box, what CAKE shaping actually fixed, and what turned out to be
+        the ISP's problem all along.
+      </p>
+    </li>
+
+    <li class="post">
+      <div class="post-meta">
+        <span>2026-06-14</span>
+        <span class="tag">self-hosted AI</span>
+        <span class="tag">proxmox</span>
+      </div>
+      <h2><a href="#">Running a local agent stack on hardware that shouldn't be enough</a></h2>
+      <p>
+        Getting an autonomous agent framework talking to a local model, in an LXC,
+        through a GPU that was never meant to be passed through. The systemd
+        errors, the driver mismatches, and the one environment variable that fixed
+        everything.
+      </p>
+    </li>
+
+    <li class="post">
+      <div class="post-meta">
+        <span>2026-05-22</span>
+        <span class="tag">intelligence studies</span>
+        <span class="tag">security</span>
+      </div>
+      <h2><a href="#">Misinformation isn't a content problem, it's an infrastructure problem</a></h2>
+      <p>
+        A field note from a research paper on misinformation, disinformation, and
+        malinformation: why the academic framing and the national security framing
+        of the same phenomenon barely speak the same language — and why that gap
+        matters.
+      </p>
+    </li>
+  </ul>
+
+  <p class="note">
+    These three are placeholders written in the site's real voice — swap the
+    <code>href="#"</code> links for individual post pages as you publish them.
+  </p>
+</main>
+
+<footer>
+  © 2026 Lycans' Blog. All rights reserved.
+  <div class="links">
+    <a href="#">Source</a>
+    <a href="#">Feed</a>
+    <a href="#">Support</a>
+  </div>
+</footer>
+
+</body>
+</html>
