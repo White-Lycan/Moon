@@ -1,0 +1,487 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="description" content="Lycans' Blog — dispatches from a coder who howls at deadlines.">
+    <title>Lycans' Blog</title>
+    <link href="css.css" rel="stylesheet"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style> 
+        :root {
+            --void: #07090c;
+            --panel: rgba(9, 12, 16, 0.62);
+            --panel-solid: #0c0f14;
+            --frost: #e6edf1;
+            --frost-dim: #8fa0aa;
+            --blood: #e4383f;
+            --blood-dim: #8a2a2f;
+            --dusk: #9457d1;
+            --line: rgba(230, 237, 241, 0.14);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background-color: var(--void);
+            font-family: "IBM Plex Mono", monospace;
+            color: var(--frost);
+        }
+
+        body {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+                      min-height: 100vh;
+        }
+
+        /* Scroll progress bar, fixed to top of viewport */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--blood), var(--dusk));
+            z-index: 200;
+            transition: width 0.1s ease-out;
+        }
+
+        /* Atmosphere: fixed snow gif, darkened, plus a static grain overlay */
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background-image: url('/snow-loop_1.gif');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.38) saturate(0.85);
+        }
+        .backdrop::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(7,9,12,0.15) 0%, rgba(7,9,12,0.82) 72%);
+        }
+
+        .grain {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.05;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+        }
+
+        a { color: var(--blood); }
+
+        /* ---------- HEADER ---------- */
+        header { 
+            width: 100%;
+            z-index: 100;
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0.9rem 1.5rem;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .mark {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            text-decoration: none;
+            color: var(--frost);
+            font-family: "JetBrains Mono", monospace;
+            font-weight: 800;
+            font-size: 1.05rem;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+        .mark svg { flex: none; }
+
+        .mark .dim { color: var(--frost-dim); font-weight: 500; }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex; 
+            justify-content: flex-end;
+            gap: clamp(1rem, 2.5vw, 2.2rem);
+        }
+        nav ul li a {
+            position: relative;
+            display: inline-block;
+            color: var(--frost-dim);
+            text-decoration: none;
+            font-size: 0.86rem;
+            letter-spacing: 0.03em;
+            padding: 0.3rem 0.1rem;
+            transition: color 0.2s ease;
+        }
+        nav ul li a::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--blood), var(--dusk));
+            transform: scaleX(0) skewX(-12deg);
+            transform-origin: left;
+            transition: transform 0.25s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a:focus-visible {
+            color: var(--frost);
+        }
+
+        nav ul li a:hover::before,
+        nav ul li a:focus-visible::before {
+            transform: scaleX(1) skewX(-12deg);
+        }
+
+        nav ul li a.current {
+            color: var(--frost);
+        }
+
+        nav ul li a.current::before {
+            transform: scaleX(1) skewX(-12deg);
+        }
+
+        /* ---------- HERO / MIDDLE ANIMATION ---------- */
+        main {             
+            display: flex;
+            align-items: center;
+            padding: 7.5rem 1.5rem 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .moon {
+            position: absolute;
+            top: 8%;
+            right: 6%;
+            width: clamp(70px, 12vw, 140px);
+            height: clamp(70px, 12vw, 140px);
+            opacity: 0.9;
+            filter: drop-shadow(0 0 22px rgba(148, 87, 209, 0.35));
+        }
+
+        .hero {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto; 
+            display: grid;
+            grid-template-columns: minmax(0, 680px) 1fr;
+        }
+        .terminal {
+            background: var(--panel-solid);
+            border: 1px solid var(--line);
+            border-radius: 10px; 
+            box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+            overflow: hidden;
+        }
+
+        .terminal-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 0.9rem;
+            border-bottom: 1px solid var(--line);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .terminal-bar span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            background: #3a3f47;
+        }
+
+        .terminal-bar span:nth-child(1) { background: var(--blood-dim); }
+        .terminal-bar .path {
+            margin-left: 0.6rem;
+            font-size: 0.72rem;
+            color: var(--frost-dim);
+        }
+
+        .terminal-body {
+            padding: 1.6rem 1.7rem 2.1rem;
+            font-size: clamp(1.05rem, 2.4vw, 1.5rem);
+            line-height: 1.65;
+            min-height: 9.5em;
+        }
+
+        .terminal-body .prompt-line {
+            color: var(--frost-dim);
+            font-size: 0.62em;
+            margin-bottom: 0.5em;
+        }
+
+        .terminal-body .prompt-line .user { color: var(--blood); }
+        .terminal-body .prompt-line .dir { color: var(--dusk); }
+
+        #typewriter {
+            font-family: "JetBrains Mono", monospace;
+            font-weight: 700;
+            color: var(--frost);
+        }
+
+        /* Cursor is a sibling of #typewriter, not a child — selector fixed accordingly.
+           Blink is handled in JS via opacity toggle, so no CSS animation here. */
+        #typewriter + .cursor {
+            display: inline-block;
+            width: 0.55ch;
+            height: 1em;
+            vertical-align: -0.15em;
+            background: var(--blood);
+            margin-left: 2px;
+        }
+
+        .hero-side {
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: 0.5rem;
+        }
+        .hero-side p {
+            color: var(--frost-dim);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            max-width: 20ch;
+            margin: 0 0 0 2.2rem;
+            border-left: 1px solid var(--line);
+            padding-left: 1.2rem;
+        }
+        @media (max-width: 780px) {
+            .hero { grid-template-columns: 1fr; }
+            .hero-side { display: none; }
+            .header-inner { grid-template-columns: 1fr; }
+            nav ul { justify-content: flex-start; flex-wrap: wrap; gap: 1rem 1.4rem; }
+        }
+
+        /* ---------- FOOTER ---------- */
+        footer { 
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid var(--line);
+            padding: 1.1rem 1.5rem;
+        }
+
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-inner .copy {
+            color: var(--frost-dim);
+            font-size: 0.75rem;
+        }
+
+        .elsewhere {
+            list-style: none;
+            display: flex;
+            gap: 1.1rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .elsewhere a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--frost-dim);
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: color 0.2s ease;
+        }
+
+        .elsewhere a:hover { color: var(--frost); }
+        .elsewhere svg { opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <div id="progress-bar"></div>
+    <div class="backdrop"></div>
+    <div class="grain"></div>
+
+    <header> 
+        <div class="header-inner">
+            <a class="mark" href="index.html">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3a9 9 0 1 0 8.94 10.11A7 7 0 0 1 12 3Z" fill="#9457d1"/>
+                </svg>
+                LYCAN<span class="dim">.blog</span>
+            </a>
+            <nav aria-label="Primary">
+                <ul>
+                    <li><a class="current" href="index.html">Home</a></li>
+                    <li><a href="About/about.html">What is this?</a></li>
+                    <li><a href="Articles/article.html">Read something</a></li>
+                    <li><a href="Contact/contact.html">Get in touch</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="content"> 
+        <svg class="moon" viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+                <radialGradient id="moonlight" cx="35%" cy="35%" r="70%">
+                    <stop offset="0%" stop-color="#eef0f4"/>
+                    <stop offset="100%" stop-color="#c9cede"/>
+                </radialGradient>
+            </defs>
+            <circle cx="50" cy="50" r="42" fill="url(#moonlight)"/>
+            <circle cx="35" cy="38" r="6" fill="#b7bccb" opacity="0.6"/>
+            <circle cx="60" cy="60" r="9" fill="#b7bccb" opacity="0.5"/>
+            <circle cx="66" cy="34" r="4" fill="#b7bccb" opacity="0.5"/>
+        </svg>
+
+        <div class="hero">
+            <div class="terminal">
+                <div class="terminal-bar">
+                    <span></span><span></span><span></span>
+                    <span class="path">lycan@blog: ~/</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="prompt-line"><span class="user">lycan</span><span>@blog:</span><span class="dir">~</span><span>$ ./run.sh</span></div>
+                    <span id="typewriter"></span><span class="cursor" id="cursor"></span>
+                </div>
+            </div>
+            <div class="hero-side">
+                <p>Notes on code, nights, and everything that only makes sense after midnight.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer> 
+        <div class="footer-inner">
+            <p class="copy">&copy; 2026 Lycans' Blog. All rights reserved.</p>
+            <ul class="elsewhere">
+                <li>
+                    <a href="#" rel="noopener noreferrer" aria-label="GitHub">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+                        Source
+                    </a>
+                </li>
+                <li>
+                    <a href="#" rel="noopener noreferrer" aria-label="RSS feed">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2a12 12 0 0 1 12 12h-2.4A9.6 9.6 0 0 0 2 4.4V2Zm0 4.8A7.2 7.2 0 0 1 9.2 14H6.8A4.8 4.8 0 0 0 2 9.2V6.8ZM3.6 11.6a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Z"/></svg>
+                        Feed
+                    </a>
+                </li>
+                <li>
+                    <a href="#" rel="noopener noreferrer" aria-label="Support this blog">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 14.25S1.5 10.6 1.5 6.1A3.6 3.6 0 0 1 8 3.98 3.6 3.6 0 0 1 14.5 6.1c0 4.5-6.5 8.15-6.5 8.15Z"/></svg>
+                        Support
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </footer>
+
+    <script>
+    (function () {
+        var lines = [
+            "whoami",
+            "> a lycan who codes between full moons",
+            "cd /midnight/thoughts",
+            "> compiling stories under a blood moon",
+            "tail -f howls.log",
+            "> still debugging the curse"
+        ];
+    
+        var el = document.getElementById('typewriter');
+        var cursor = document.getElementById('cursor');
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+        if (reduceMotion) {
+            // Just show the first line statically, skip the animation entirely
+            el.textContent = lines[0];
+            if (cursor) cursor.style.display = 'none';
+            return;
+        }
+    
+        var lineIndex = 0;
+        var charIndex = 0;
+        var deleting = false;
+    
+        var TYPE_SPEED = 45;
+        var DELETE_SPEED = 20;
+        var HOLD = 2400;
+        var JITTER = 25; // +/- ms of randomness so typing feels human, not robotic
+    
+        function jitter(base) {
+            return base + (Math.random() * JITTER * 2 - JITTER);
+        }
+    
+        function tick() {
+            var current = lines[lineIndex];
+    
+            if (!deleting) {
+                charIndex++;
+                el.textContent = current.slice(0, charIndex);
+                if (charIndex === current.length) {
+                    deleting = true;
+                    return setTimeout(tick, HOLD);
+                }
+                return setTimeout(tick, jitter(TYPE_SPEED));
+            }
+    
+            charIndex--;
+            el.textContent = current.slice(0, charIndex);
+            if (charIndex === 0) {
+                deleting = false;
+                lineIndex = (lineIndex + 1) % lines.length;
+                return setTimeout(tick, TYPE_SPEED * 3);
+            }
+            return setTimeout(tick, DELETE_SPEED);
+        }
+    
+        // Blinking cursor, independent of the typing loop
+        setInterval(function () {
+            if (cursor) cursor.style.opacity = cursor.style.opacity === '1' ? '0' : '1';
+        }, 500);
+    
+        cursor.style.opacity = '1';
+        tick();
+    })();
+
+    const progressBar = document.getElementById("progress-bar");
+
+    window.addEventListener("scroll", () => {
+      // How far can you scroll total?
+      const scrollable = document.body.scrollHeight - window.innerHeight;
+      // How far have you scrolled?
+      const scrolled = window.scrollY;
+      // Convert to a percentage
+      const progress = (scrolled / scrollable) * 100;
+      progressBar.style.width = progress + "%";
+    });
+    </script>
+</body>
+</html>
