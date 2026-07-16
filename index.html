@@ -389,8 +389,91 @@
             </ul>
         </div>
     </footer>
+    <span id="typewriter"></span><span id="cursor" style="opacity:1">▊</span>
 
     <script>
+    (function () {
+        var lines = [
+            "whoami",
+            "> a lycan who codes between full moons",
+            "cd /midnight/thoughts",
+            "> compiling stories under a blood moon",
+            "tail -f howls.log",
+            "> still debugging the curse"
+        ];
+    
+        var el = document.getElementById('typewriter');
+        var cursor = document.getElementById('cursor');
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+        if (reduceMotion) {
+            // Just show the first line statically, skip the animation entirely
+            el.textContent = lines[0];
+            if (cursor) cursor.style.display = 'none';
+            return;
+        }
+    
+        var lineIndex = 0;
+        var charIndex = 0;
+        var deleting = false;
+    
+        var TYPE_SPEED = 45;
+        var DELETE_SPEED = 20;
+        var HOLD = 2400;
+        var JITTER = 25; // +/- ms of randomness so typing feels human, not robotic
+    
+        function jitter(base) {
+            return base + (Math.random() * JITTER * 2 - JITTER);
+        }
+    
+        function tick() {
+            var current = lines[lineIndex];
+    
+            if (!deleting) {
+                charIndex++;
+                el.textContent = current.slice(0, charIndex);
+                if (charIndex === current.length) {
+                    deleting = true;
+                    return setTimeout(tick, HOLD);
+                }
+                return setTimeout(tick, jitter(TYPE_SPEED));
+            }
+    
+            charIndex--;
+            el.textContent = current.slice(0, charIndex);
+            if (charIndex === 0) {
+                deleting = false;
+                lineIndex = (lineIndex + 1) % lines.length;
+                return setTimeout(tick, TYPE_SPEED * 3);
+            }
+            return setTimeout(tick, DELETE_SPEED);
+        }
+    
+        // Blinking cursor, independent of the typing loop
+        setInterval(function () {
+            if (cursor) cursor.style.opacity = cursor.style.opacity === '1' ? '0' : '1';
+        }, 500);
+    
+        tick();
+    })();
+
+    const progressBar = document.getElementById("progress-bar");
+
+    window.addEventListener("scroll", () => {
+      // How far can you scroll total?
+      const scrollable = document.body.scrollHeight - window.innerHeight;
+      // How far have you scrolled?
+      const scrolled = window.scrollY;
+      // Convert to a percentage
+      const progress = (scrolled / scrollable) * 100;
+      progressBar.style.width = progress + "%";
+    });
+    </script>
+
+    
+
+    
+    <!--<script>
         (function () {
             var lines = [
                 "whoami",
@@ -430,6 +513,8 @@
          
             tick();
         })();
-    </script>
+
+        
+    </script>-->
 </body>
 </html> 
