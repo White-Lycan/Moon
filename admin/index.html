@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin — Lycans' Blog</title>
+    <style>
+        :root {
+            --void: #07090c;
+            --panel-solid: #0c0f14;
+            --frost: #e6edf1;
+            --frost-dim: #8fa0aa;
+            --blood: #e4383f;
+            --blood-dim: #8a2a2f;
+            --dusk: #9457d1;
+            --line: rgba(230, 237, 241, 0.14);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 2rem 1.5rem 4rem;
+            background: var(--void);
+            color: var(--frost);
+            font-family: "IBM Plex Mono", monospace;
+        }
+        h1 {
+            font-size: 1.1rem;
+            letter-spacing: 0.04em;
+            color: var(--frost);
+            margin-bottom: 1.5rem;
+        }
+        h1 span { color: var(--blood); }
+        .wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            gap: 2rem;
+        }
+        .panel {
+            background: var(--panel-solid);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+        .panel h2 {
+            font-size: 0.85rem;
+            color: var(--frost-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin: 0 0 1rem;
+        }
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--frost-dim);
+            margin-bottom: 0.3rem;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            background: var(--void);
+            border: 1px solid var(--line);
+            color: var(--frost);
+            font-family: inherit;
+            font-size: 0.9rem;
+            padding: 0.6rem 0.7rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        textarea { min-height: 180px; resize: vertical; }
+        .row { display: flex; gap: 1rem; align-items: center; }
+        button {
+            background: var(--blood-dim);
+            color: var(--frost);
+            border: none;
+            padding: 0.55rem 1.1rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        button:hover { background: var(--blood); }
+        button.secondary {
+            background: transparent;
+            border: 1px solid var(--line);
+        }
+        button.secondary:hover { border-color: var(--frost-dim); background: transparent; }
+        .post-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid var(--line);
+            font-size: 0.85rem;
+        }
+        .post-row:last-child { border-bottom: none; }
+        .post-meta { color: var(--frost-dim); font-size: 0.75rem; }
+        .draft-tag {
+            color: var(--dusk);
+            font-size: 0.7rem;
+            border: 1px solid var(--dusk);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+        }
+        .status { font-size: 0.8rem; margin-top: 0.5rem; color: var(--frost-dim); }
+        .status.error { color: var(--blood); }
+        .status.ok { color: #6fbf73; }
+        .checkbox-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .checkbox-row input { width: auto; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>lycan<span>.blog</span> / admin</h1>
+
+        <div class="panel">
+            <h2 id="form-heading">New post</h2>
+            <form id="post-form">
+                <input type="hidden" id="post-id" value="">
+
+                <label for="title">Title</label>
+                <input type="text" id="title" required>
+
+                <label for="slug">Slug (used in the URL, e.g. "midnight-thoughts")</label>
+                <input type="text" id="slug" required>
+
+                <label for="body">Body</label>
+                <textarea id="body" required></textarea>
+
+                <div class="checkbox-row">
+                    <input type="checkbox" id="published" checked>
+                    <label for="published" style="margin: 0;">Published (uncheck to save as draft)</label>
+                </div>
+
+                <div class="row">
+                    <button type="submit" id="submit-btn">Save post</button>
+                    <button type="button" class="secondary" id="cancel-btn" style="display:none;">Cancel edit</button>
+                </div>
+                <div class="status" id="form-status"></div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>All posts</h2>
+            <div id="post-list">Loading…</div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('post-form');
+        const postIdField = document.getElementById('post-id');
+        const titleField = document.getElementById('title');
+        const slugField = document.getElementById('slug');
+        const bodyField = document.getElementById('body');
+        const publishedField = document.getElementById('published');
+        const formHeading = document.getElementById('form-heading');
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const formStatus = document.getElementById('form-status');
+        const postList = document.getElementById('post-list');
+
+        async function loadPosts() {
+            postList.textContent = 'Loading…';
+            try {
+                const res = await fetch('/api/admin/posts');
+                if (!res.ok) throw new Error('Failed to load posts');
+                const posts = await res.json();
+
+                if (posts.length === 0) {
+                    postList.textContent = 'No posts yet. Write your first one above.';
+                    return;
+                }
+
+                postList.innerHTML = '';
+                posts.forEach(post => {
+                    const row = document.createElement('div');
+                    row.className = 'post-row';
+                    row.innerHTML = `
+                        <div>
+                            <strong>${escapeHtml(post.title)}</strong>
+                            ${post.published ? '' : '<span class="draft-tag">DRAFT</span>'}
+                            <div class="post-meta">/${escapeHtml(post.slug)} — ${post.created_at}</div>
+                        </div>
+                        <div class="row">
+                            <button type="button" class="secondary" data-action="edit" data-id="${post.id}">Edit</button>
+                            <button type="button" class="secondary" data-action="delete" data-id="${post.id}">Delete</button>
+                        </div>
+                    `;
+                    postList.appendChild(row);
+                });
+
+                postList.querySelectorAll('[data-action="edit"]').forEach(btn => {
+                    btn.addEventListener('click', () => editPost(posts.find(p => p.id == btn.dataset.id)));
+                });
+                postList.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                    btn.addEventListener('click', () => deletePost(btn.dataset.id));
+                });
+            } catch (err) {
+                postList.textContent = 'Could not load posts.';
+            }
+        }
+
+        function editPost(post) {
+            postIdField.value = post.id;
+            titleField.value = post.title;
+            slugField.value = post.slug;
+            bodyField.value = post.body;
+            publishedField.checked = !!post.published;
+            formHeading.textContent = 'Editing: ' + post.title;
+            submitBtn.textContent = 'Update post';
+            cancelBtn.style.display = 'inline-block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            postIdField.value = '';
+            form.reset();
+            publishedField.checked = true;
+            formHeading.textContent = 'New post';
+            submitBtn.textContent = 'Save post';
+            cancelBtn.style.display = 'none';
+            formStatus.textContent = '';
+            formStatus.className = 'status';
+        }
+
+        cancelBtn.addEventListener('click', resetForm);
+
+        async function deletePost(id) {
+            if (!confirm('Delete this post? This cannot be undone.')) return;
+            try {
+                const res = await fetch('/api/admin/posts?id=' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Delete failed');
+                loadPosts();
+            } catch (err) {
+                alert('Could not delete post.');
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            formStatus.textContent = 'Saving…';
+            formStatus.className = 'status';
+
+            const payload = {
+                title: titleField.value.trim(),
+                slug: slugField.value.trim(),
+                body: bodyField.value,
+                published: publishedField.checked
+            };
+
+            const id = postIdField.value;
+            const url = id ? '/api/admin/posts?id=' + id : '/api/admin/posts';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Save failed');
+                }
+
+                formStatus.textContent = 'Saved.';
+                formStatus.className = 'status ok';
+                resetForm();
+                loadPosts();
+            } catch (err) {
+                formStatus.textContent = err.message;
+                formStatus.className = 'status error';
+            }
+        });
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        loadPosts();
+    </script>
+</body>
+</html>
