@@ -1,6 +1,0 @@
-name = "moon"
-pages_build_output_dir = "."
-[[d1_databases]]
-binding = "DB"
-database_name = "den"
-database_id = "07f7ddb2-a909-43f8-bc5f-6f3a630def82"
